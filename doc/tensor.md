@@ -8,7 +8,7 @@ It is *__the__* base class for handling numerical data.
 
 As with   pretty much anything in [Torch7](./../index.md), tensors are
 [serializable](file.md#torch.File.serialization), which means that 
-they can read and written with read() and write() methods.
+they can be read and written with read() and write() methods.
 
 
 __Tensors are Multi-dimensional Numerical Arrays__
@@ -22,7 +22,7 @@ Here is the simplest way to create a vector of 5 double-precision floating point
 ```
 Tensors are not automatically initialized to zero. To do so, call the zero() method:
 ```lua
- --- creating a 4D-tensor 4x5x6x2
+ --- creating a vector filled with zeros
  > z = torch.Tensor(5):zero()
  > =z
 0
