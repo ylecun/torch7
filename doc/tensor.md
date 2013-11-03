@@ -1,37 +1,91 @@
 <a name="torch.Tensor.dok"/>
 # Tensor #
 
-The `Tensor` class is probably the most important class in
-`Torch`. Almost every package depends on this class. It is *__the__*
-class for handling numeric data. As with   pretty much anything in
-[Torch7](./../index.md), tensors are
-[serializable](file.md#torch.File.serialization).
+The `Tensor` class is multi-dimensional numerical array class.
+It is the most important class in `Torch`. 
+Almost every package depends on it. 
+It is *__the__* base class for handling numerical data. 
 
-__Multi-dimensional matrix__
+As with   pretty much anything in [Torch7](./../index.md), tensors are
+[serializable](file.md#torch.File.serialization), which means that 
+they can read and written with read() and write() methods.
 
-A `Tensor` is a potentially multi-dimensional matrix. The number of
-dimensions is unlimited that can be created using
-[LongStorage](storage.md) with more dimensions.
 
-Example:
+__Tensors are Multi-dimensional Numerical Arrays__
+
+A `Tensor` is a numerical array. A `Tensor` can have any number of dimensions. 
+With 1 dimension, it's a vector, with 2 it's a matrix, and with 3 or more a tensor.
+Here is the simplest way to create a vector of 5 double-precision floating point numbers:
 ```lua
- --- creation of a 4D-tensor 4x5x6x2
+ --- creating a vector with 5 elements
+ z = torch.Tensor(5)
+```
+Tensors are not automatically initialized to zero. To do so, call the zero() method:
+```lua
+ --- creating a 4D-tensor 4x5x6x2
+ > z = torch.Tensor(5):zero()
+ > =z
+0
+0
+0
+0
+0
+[torch.DoubleTensor of dimension 5]
+```
+Tensor elements can be indexed with the square bracket operator.
+Tensors use 1-base indexing. This is the same convention as Lua, 
+Matlab and FORTRAN (different from C/C++ and Python which are 0-based):
+```lua
+t7> z=torch.Tensor(3,4):zero()
+t7> =z
+0 0 0 0
+0 0 0 0
+0 0 0 0
+[torch.DoubleTensor of dimension 3x4]
+
+t7> z[1][1]=11; z[2][3] = 23
+t7> =z
+ 11   0   0   0
+  0   0  23   0
+  0   0   0   0
+[torch.DoubleTensor of dimension 3x4]
+
+t7> z[3][1] = z[2][3] + 8
+t7> =z
+ 11   0   0   0
+  0   0  23   0
+ 31   0   0   0
+[torch.DoubleTensor of dimension 3x4]
+
+```
+
+Tensors with up to 4 dimensions can be created with the same 
+syntax as above. To create a Tensor with more than 6 dimensions, 
+one must pass a [LongStorage](storage.md) array containing the dimensions:
+
+```lua
+ --- creation of a 4D tensor 4x5x6x2
  z = torch.Tensor(4,5,6,2)
- --- for more dimensions, (here a 6D tensor) one can do:
+ 
+ --- for more dimensions (here a 6D tensor) one can do:
+ x = torch.Tensor(torch.LongStorage({4,5,6,2,7,3}))
+ 
+ --- or do the same thing more fastidiously:
  s = torch.LongStorage(6)
  s[1] = 4; s[2] = 5; s[3] = 6; s[4] = 2; s[5] = 7; s[6] = 3;
  x = torch.Tensor(s)
 ```
+The number of dimension is unlimited (for all practical purpose).
 
-The number of dimensions of a `Tensor` can be queried by
-[nDimension()](#torch.Tensor.nDimension) or
-[dim()](#torch.Tensor.dim). Size of the `i-th` dimension is
-returned by [size(i)](#torch.Tensor.size). A [LongStorage](storage.md)
-containing all the dimensions can be returned by
-[size()](#torch.Tensor.size).
+
+The number of dimensions of a `Tensor` can be queried with the
+[dim()](#torch.Tensor.dim) or [nDimension()](#torch.Tensor.nDimension) methods. 
+The size in the `i-th` dimension is returned by [size(i)](#torch.Tensor.size). 
+A [LongStorage](storage.md) containing all the dimensions can be obtained with
+the [size()](#torch.Tensor.size) method.
 
 ```lua
-> print(x:nDimension())
+> print(x:dim())
 6
 > print(x:size())
  4
