@@ -77,6 +77,9 @@ one must pass a [LongStorage](storage.md) array containing the dimensions:
 ```
 The number of dimension is unlimited (for all practical purpose).
 
+There are many more different ways to create Tensors, all of which 
+are described in the [Tensor Constructors](tensor.md#tensor-constructors) section.
+
 
 The number of dimensions of a `Tensor` can be queried with the
 [dim()](#torch.Tensor.dim) or [nDimension()](#torch.Tensor.nDimension) methods. 
