@@ -80,6 +80,30 @@ The number of dimension is unlimited (for all practical purpose).
 There are many more different ways to create Tensors, all of which 
 are described in the [Tensor Constructors](tensor.md#tensor-constructors) section.
 
+__Tensors of different types__
+
+Tensors can be created to contain different numerical types
+```lua
+torch.ByteTensor() -- contains unsigned chars
+torch.CharTensor() -- contains signed chars
+torch.ShortTensor() -- contains 16-bit signed shorts
+torch.IntTensor() -- contains 32-bit signed ints
+torch.FloatTensor() -- contains 32-bit floats
+torch.DoubleTensor() -- contains 64-bit doubles
+```
+However, most of the mathematical operations on Tensors only work 
+with `FloatTensor` or `DoubleTensor`.
+
+For convenience, _an alias_ `torch.Tensor` is provided, which allows the user to write
+type-independent scripts, which can then ran after choosing the desired Tensor type with
+a call like
+```lua
+torch.setdefaulttensortype('torch.FloatTensor')
+```
+See [torch.setdefaulttensortype](utility.md#torch.setdefaulttensortype) for more details.
+By default, the alias "points" on `torch.DoubleTensor`.
+
+__Getting Information about a Tensor__
 
 The number of dimensions of a `Tensor` can be queried with the
 [dim()](#torch.Tensor.dim) or [nDimension()](#torch.Tensor.nDimension) methods. 
@@ -102,28 +126,48 @@ the [size()](#torch.Tensor.size) method.
 
 __Internal data representation__
 
-The actual data of a `Tensor` is contained into a
-[Storage](storage.md). It can be accessed using
-[`storage()`](#torch.Tensor.storage). While the memory of a
-`Tensor` has to be contained in this unique `Storage`, it might
-not be contiguous: the first position used in the `Storage` is given
-by [`storageOffset()`](#torch.Tensor.storageOffset) (starting at
-`1`). And the _jump_ needed to go from one element to another
-element in the `i-th` dimension is given by
-[`stride(i)`](#torch.Tensor.stride). In other words, given a 3D
-tensor
+A `Tensor` does not contain any actual data. The actual
+data is contained in a [Storage](storage.md) object.
+The 'Tensor' is merely a structure to easily access data stored 
+in a 'Storage'. 
 
+A `Tensor` contains 4 types of informations: (1) a pointer to a 
+`Storage` that contains the data; (2) an integrer offset that 
+indicates where the `Tensor` data starts within the `Storage`; 
+(3) the size of the `Tensor` in each dimension; (4) the 'stride'
+for each dimension, i.e. the integer by which the index in 
+the `Storage` must be incremented to access the next item along
+a particular dimension.
+
+This organization allows multiple multiple Tensors to access the
+same data in different ways. It also allows array slicing and 
+transposition without copying data. 
+
+Because of the possibility of slicing, the data of `Tensor` may
+not be contiguous in memory.
+
+
+The `Storage` object used by a particular `Tensor` can be 
+accessed using [`storage()`](#torch.Tensor.storage). The offset, 
+i.e. the position of the first element of a `Tensor` within a
+`Storage` is obtained with [`storageOffset()`](#torch.Tensor.storageOffset) 
+(starting at `1`). The size in the `i-th` dimension can be obtained with
+[ dim(i) ](#torch.Tensor.dim), and the '_stride_' needed to go from 
+one element to another element in the `i-th` dimension is given by
+[`stride(i)`](#torch.Tensor.stride). 
+
+More precisely, given a 3D Tensor
 ```lua
-x = torch.Tensor(7,7,7)
+x = torch.Tensor(6,7,9)
 ```
-accessing the element `(3,4,5)` can be done by
+accessing the element `(i,j,k)` can be done with
 ```lua
-= x[3][4][5]
+= x[i][j][k]
 ```
-or equivalently (but slowly!)
+or equivalently (but considerably more slowly) with
 ```lua
 = x:storage()[x:storageOffset()
-           +(3-1)*x:stride(1)+(4-1)*x:stride(2)+(5-1)*x:stride(3)]
+           +(i-1)*x:stride(1)+(j-1)*x:stride(2)+(k-1)*x:stride(3)]
 ```
 One could say that a `Tensor` is a particular way of _viewing_ a
 `Storage`: a `Storage` only represents a chunk of memory, while the
@@ -142,8 +186,8 @@ One could say that a `Tensor` is a particular way of _viewing_ a
 [torch.DoubleTensor of dimension 4x5]
 ```
 
-Note also that in Torch7 ___elements in the same row___ [elements along the __last__ dimension]
-are contiguous in memory for a matrix [tensor]:
+Note also that in Torch7 elements along the __last__ dimension
+are contiguous in memory for a normally-allocated `Tensor`:
 ```lua
 > x = torch.Tensor(4,5)
 > i = 0
@@ -165,33 +209,8 @@ are contiguous in memory for a matrix [tensor]:
  1  -- element in the last dimension are contiguous!
 [torch.LongStorage of size 2]
 ```
-This is exactly like in C (and not `Fortran`).
+This is exactly like in C (and the opposite of `FORTRAN`).
 
-__Tensors of different types__
-
-Actually, several types of `Tensor` exists:
-```lua
-ByteTensor -- contains unsigned chars
-CharTensor -- contains signed chars
-ShortTensor -- contains shorts
-IntTensor -- contains ints
-FloatTensor -- contains floats
-DoubleTensor -- contains doubles
-```
-
-Most numeric operations are implemented _only_ for `FloatTensor` and `DoubleTensor`. 
-Other Tensor types are useful if you want to save memory space.
-
-__Default Tensor type__
-
-For convenience, _an alias_ `torch.Tensor` is provided, which allows the user to write
-type-independent scripts, which can then ran after choosing the desired Tensor type with
-a call like
-```lua
-torch.setdefaulttensortype('torch.FloatTensor')
-```
-See [torch.setdefaulttensortype](utility.md#torch.setdefaulttensortype) for more details.
-By default, the alias "points" on `torch.DoubleTensor`.
 
 __Efficient memory management__
 
